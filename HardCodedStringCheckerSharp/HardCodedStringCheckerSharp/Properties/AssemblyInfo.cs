@@ -5,10 +5,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle( "HardCodedStringCheckerSharp" )]
-[assembly: AssemblyDescription( "" )]
+[assembly: AssemblyTitle( "Hard Coded String Checker Sharp" )]
+[assembly: AssemblyDescription( "Searches for hard coded strings in CSharp files." )]
 [assembly: AssemblyConfiguration( "" )]
-[assembly: AssemblyCompany( "" )]
+[assembly: AssemblyCompany( "TechSmith Corporation" )]
 [assembly: AssemblyProduct( "HardCodedStringCheckerSharp" )]
 [assembly: AssemblyCopyright( "Copyright ©  2016" )]
 [assembly: AssemblyTrademark( "" )]
