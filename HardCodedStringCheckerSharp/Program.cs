@@ -20,7 +20,7 @@ namespace HardCodedStringCheckerSharp
       {
          if ( args.Count() != 2 )
          {
-            Console.WriteLine( $"Usage: <Program> RepoDirectory (Report or Fix)" );
+            Console.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix)" );
             return;
          }
 
@@ -31,7 +31,7 @@ namespace HardCodedStringCheckerSharp
 
          if ( !Directory.Exists( _strDirectory ) )
          {
-            Console.WriteLine( $"Directory \"{_strDirectory}\" doesn't exist.  Failed" );
+            Console.WriteLine( String.Format("Directory \"{0}\" doesn't exist.  Failed", _strDirectory ) );
             return;
          }
 
@@ -82,13 +82,13 @@ namespace HardCodedStringCheckerSharp
                bMadeChanges = true;
                _WarningCount++;
                string strFirstDirectory = FirstDirectory(strFile, _strDirectory);
-               Console.WriteLine( $"{_WarningCount}: [{strFirstDirectory}|{strFilename}:{nLine}] HCS: \"{strOriginalLine.Trim()}\"" );
+               Console.WriteLine( String.Format( "{0}: [{1}|{2}:{3}] HCS \"{4}\"", _WarningCount, strFirstDirectory, strFilename, nLine, strOriginalLine.Trim() ) );
             }
          }
 
          if ( eAction == Action.FixHCS && bMadeChanges == true )
          {
-            strLines = $"using static NeverTranslateNS.NeverTranslateClass;{Environment.NewLine}{strLines}";
+            strLines = String.Format( "using static NeverTranslateNS.NeverTranslateClass;{0}{1}", Environment.NewLine, strLines );
             File.WriteAllText( strFile, strLines, encoding );
          }
       }
@@ -181,7 +181,7 @@ namespace HardCodedStringCheckerSharp
          if ( nLength == 2 || ( nLength == 3 && ( eType == StringType.StringInterpolation || eType == StringType.StringInterpolation ) ) )
             return false;
          strLine = strLine.Remove( nStringStart, nLength );
-         string strInsert = $"NeverTranslate( {strSegment} )";
+         string strInsert = String.Format( "NeverTranslate( {0} )", strSegment );
          strLine = strLine.Insert( nStringStart, strInsert );
          i = nStringStart + strInsert.Length;
          return true;
