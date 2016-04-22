@@ -222,20 +222,25 @@ namespace HardCodedStringCheckerSharp
       private static bool HasIgnoreableKeyword( string strLine )
       {
          string[] arrKeywords = new string[]
-      {
-         "const",
-         "Guid",
-         "TemplatePart",
-         "DllImport",
-         "assembly:",
-         "ConstructorArgument",
-         "System.CodeDom.Compiler.GeneratedCodeAttribute",
-         "SuppressMessage",
-         "DebuggerDisplay",
-         "Given",
-         "When",
-         "Then"
-      };
+         {
+            "const",
+            "Guid",
+            "TemplatePart",
+            "DllImport",
+            "assembly:",
+            "ConstructorArgument",
+            "System.CodeDom.Compiler.GeneratedCodeAttribute",
+            "SuppressMessage",
+            "DebuggerDisplay",
+            "Description",
+            "Category",
+            "Conditional",
+            "DefaultProperty",
+            "ContentProperty",
+            "Given",
+            "When",
+            "Then"
+         };
 
          foreach ( string s in arrKeywords )
          {
