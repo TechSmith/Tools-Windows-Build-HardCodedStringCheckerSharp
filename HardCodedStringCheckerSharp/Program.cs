@@ -124,8 +124,28 @@ namespace HardCodedStringCheckerSharp
             {
                _bCommenting = false;
             }
-            if ( ch == '/' && i > 0 && strLine[i - 1] == '/' )
+            if ( ch == '/' && i > 0 && strLine[i - 1] == '/' && eType == StringType.None )
+            {
                bRestOfLineCommented = true;
+            }
+            if( ch == '{' && eType == StringType.StringInterpolation )
+            {
+               int nEndBrace = strLine.IndexOf('}', i+1);
+               if( nEndBrace != -1 )
+               {
+                  int nStart = i;
+                  int nLength = nEndBrace-i+1;
+                  string sub = strLine.Substring(nStart, nLength);
+                  bool bFix = FixUpLine(ref sub);
+                  if( bFix )
+                  {
+                     strLine = strLine.Remove( nStart, nLength );
+                     strLine = strLine.Insert( nStart, sub );
+                     i = nStart + sub.Length;
+                     continue;
+                  }
+               }
+            }
 
             if ( bRestOfLineCommented )
                continue;
