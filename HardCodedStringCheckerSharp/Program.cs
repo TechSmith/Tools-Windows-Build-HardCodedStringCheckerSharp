@@ -16,12 +16,14 @@ namespace HardCodedStringCheckerSharp
       private static string _strDirectory;// = @"E:\Git\CamtasiaWin";
       private static bool _bCommenting = false;
       private static int _WarningCount = 0;
-      static void Main( string[] args )
+      static int Main( string[] args )
       {
-         if ( args.Count() != 2 )
+         int nArgsCount = args.Count();
+         if ( nArgsCount != 2 && nArgsCount != 3 )
          {
-            Console.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix)" );
-            return;
+            Console.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional)" );
+            Environment.ExitCode = 1;
+            return 1;
          }
 
          _strDirectory = args[0];
@@ -29,38 +31,52 @@ namespace HardCodedStringCheckerSharp
          if ( args[1] == "Fix" )
             eAction = Action.FixHCS;
 
+         bool bFailOnErrors = false;
+         if ( nArgsCount == 3 && args[2] == "--FailOnHCS" )
+            bFailOnErrors = true;
+
          if ( !Directory.Exists( _strDirectory ) )
          {
             Console.WriteLine( String.Format("Directory \"{0}\" doesn't exist.  Failed", _strDirectory ) );
-            return;
+            Environment.ExitCode = 1;
+            return 1;
          }
 
+         bool bChanges = false;
          foreach ( var strFile in Directory.EnumerateFiles( _strDirectory, "*.cs", SearchOption.AllDirectories ) )
-            MakeFixesOnFile( strFile, eAction );
+            bChanges |= MakeFixesOnFile( strFile, eAction );
+
+         if ( bFailOnErrors && bChanges )
+         {
+            Environment.ExitCode = 1;
+            return 1;
+         }
+
+         return 0;
       }
 
-      private static void MakeFixesOnFile( string strFile, Action eAction )
+      private static bool MakeFixesOnFile( string strFile, Action eAction )
       {
          string strFilename = Path.GetFileName(strFile);
          if ( strFilename.CompareTo( "AssemblyInfo.cs" ) == 0 )
-            return;
+            return false;
          if ( strFilename.CompareTo( "CurrentVersion.cs" ) == 0 )
-            return;
+            return false;
          if ( strFilename.CompareTo( "Resources.Designer.cs" ) == 0 )
-            return;
+            return false;
          if ( strFilename.CompareTo( "SmokeTest.feature.cs" ) == 0 )//This is "automatically" generated
-            return;
+            return false;
 
          if ( strFile.ToLower().Contains( "packages" ) )
-            return;
+            return false;
 
          if ( strFile.ToLower().Contains( "TemporaryGeneratedFile" ) )
-            return;
+            return false;
 
          if ( strFilename.ToLower().Contains( ".i." ) )
-            return;
+            return false;
          if ( strFilename.ToLower().Contains( ".g." ) )
-            return;
+            return false;
 
          _bCommenting = false;
 
@@ -91,6 +107,8 @@ namespace HardCodedStringCheckerSharp
             strLines = String.Format( "using static NeverTranslateNS.NeverTranslateClass;{0}{1}", Environment.NewLine, strLines );
             File.WriteAllText( strFile, strLines, encoding );
          }
+
+         return bMadeChanges;
       }
 
       enum StringType
