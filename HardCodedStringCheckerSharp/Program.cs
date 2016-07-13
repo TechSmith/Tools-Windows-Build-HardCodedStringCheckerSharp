@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -61,6 +62,10 @@ namespace HardCodedStringCheckerSharp
          if ( strFilename.ToLower().Contains( ".i." ) )
             return false;
          if ( strFilename.ToLower().Contains( ".g." ) )
+            return false;
+
+         var cultureInfo = new CultureInfo("en-US");
+         if ( cmdLine.ExcludePaths.Any( exclude => cultureInfo.CompareInfo.IndexOf( strFile, exclude, CompareOptions.IgnoreCase ) >= 0 ) )
             return false;
 
          _bCommenting = false;

@@ -14,6 +14,7 @@ namespace HardCodedStringCheckerSharp
       public string ReposityPath { get; private set; } = String.Empty;
       public Action Action { get; private set; } = Action.ReportHCS;
       public bool FailBuildWithHSC { get; private set; } = false;
+      public List<String> ExcludePaths { get; private set; } = new List<String>();
 
       public CommandLine()
       {
@@ -22,22 +23,37 @@ namespace HardCodedStringCheckerSharp
 
       public bool Parse( string[] args )
       {
-         if ( args.Count() < 2 )
+         int nNumCmdLineArgs = args.Count();
+
+         if ( nNumCmdLineArgs < 2 )
          {
-            Console.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional)" );
+            Console.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional) (--Exclude PartialPath optional)" );
             return false;
          }
 
          ReposityPath = args[0];
 
-         //------------------------------
-         if ( args[1] == "Fix" )
-            Action = Action.FixHCS;
+         for ( int nIndex = 1; nIndex < nNumCmdLineArgs; nIndex++ )
+         {
+            if ( args[nIndex] == "Fix" )
+            {
+               Action = Action.FixHCS;
+               continue;
+            }
 
-         //------------------------------
+            if ( args[nIndex] == "--FailOnHCS" )
+            {
+               FailBuildWithHSC = true;
+               continue;
+            }
 
-         if ( args.Count() >= 3 && args[2] == "--FailOnHCS" )
-            FailBuildWithHSC = true;
+            if( args[nIndex] == "--Exclude" )
+            {
+               nIndex++;
+               ExcludePaths.Add( args[nIndex] );
+               continue;
+            }
+         }
 
          return true;
       }
