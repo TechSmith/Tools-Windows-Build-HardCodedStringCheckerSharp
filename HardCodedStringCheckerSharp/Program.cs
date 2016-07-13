@@ -1,52 +1,38 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace HardCodedStringCheckerSharp
 {
-   enum Action
-   {
-      ReportHCS,
-      FixHCS
-   }
+   
    public class Program
    {
-      private static string _strDirectory;// = @"E:\Git\CamtasiaWin";
       private static bool _bCommenting = false;
       private static int _WarningCount = 0;
       static int Main( string[] args )
       {
-         int nArgsCount = args.Count();
-         if ( nArgsCount != 2 && nArgsCount != 3 )
+         CommandLine cmdLine = new CommandLine();
+         if( !cmdLine.Parse( args ) )
          {
-            Console.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional)" );
             Environment.ExitCode = 1;
             return 1;
          }
 
-         _strDirectory = args[0];
-         Action eAction = Action.ReportHCS;
-         if ( args[1] == "Fix" )
-            eAction = Action.FixHCS;
-
-         bool bFailOnErrors = false;
-         if ( nArgsCount == 3 && args[2] == "--FailOnHCS" )
-            bFailOnErrors = true;
-
-         if ( !Directory.Exists( _strDirectory ) )
+         if ( !Directory.Exists( cmdLine.ReposityPath ) )
          {
-            Console.WriteLine( String.Format("Directory \"{0}\" doesn't exist.  Failed", _strDirectory ) );
+            Console.WriteLine( String.Format("Directory \"{0}\" doesn't exist.  Failed", cmdLine.ReposityPath ) );
             Environment.ExitCode = 1;
             return 1;
          }
 
          bool bChanges = false;
-         foreach ( var strFile in Directory.EnumerateFiles( _strDirectory, "*.cs", SearchOption.AllDirectories ) )
-            bChanges |= MakeFixesOnFile( strFile, eAction );
+         foreach ( var strFile in Directory.EnumerateFiles( cmdLine.ReposityPath, "*.cs", SearchOption.AllDirectories ) )
+            bChanges |= MakeFixesOnFile( strFile, cmdLine );
 
-         if ( bFailOnErrors && bChanges )
+         if ( cmdLine.FailBuildWithHSC && bChanges )
          {
             Environment.ExitCode = 1;
             return 1;
@@ -55,7 +41,7 @@ namespace HardCodedStringCheckerSharp
          return 0;
       }
 
-      private static bool MakeFixesOnFile( string strFile, Action eAction )
+      private static bool MakeFixesOnFile( string strFile, CommandLine cmdLine )
       {
          string strFilename = Path.GetFileName(strFile);
          if ( strFilename.CompareTo( "AssemblyInfo.cs" ) == 0 )
@@ -78,6 +64,10 @@ namespace HardCodedStringCheckerSharp
          if ( strFilename.ToLower().Contains( ".g." ) )
             return false;
 
+         var cultureInfo = new CultureInfo("en-US");
+         if ( cmdLine.ExcludePaths.Any( exclude => cultureInfo.CompareInfo.IndexOf( strFile, exclude, CompareOptions.IgnoreCase ) >= 0 ) )
+            return false;
+
          _bCommenting = false;
 
          bool bMadeChanges = false;
@@ -97,12 +87,12 @@ namespace HardCodedStringCheckerSharp
             {
                bMadeChanges = true;
                _WarningCount++;
-               string strFirstDirectory = FirstDirectory(strFile, _strDirectory);
+               string strFirstDirectory = FirstDirectory(strFile, cmdLine.ReposityPath);
                Console.WriteLine( String.Format( "{0}: [{1}|{2}:{3}] HCS \"{4}\"", _WarningCount, strFirstDirectory, strFilename, nLine, strOriginalLine.Trim() ) );
             }
          }
 
-         if ( eAction == Action.FixHCS && bMadeChanges == true )
+         if ( cmdLine.Action == Action.FixHCS && bMadeChanges == true )
          {
             strLines = String.Format( "using static NeverTranslateNS.NeverTranslateClass;{0}{1}", Environment.NewLine, strLines );
             File.WriteAllText( strFile, strLines, encoding );
