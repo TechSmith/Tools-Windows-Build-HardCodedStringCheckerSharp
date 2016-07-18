@@ -267,6 +267,7 @@ namespace HardCodedStringCheckerSharp
             "DllImport",
             "assembly:",
             "ConstructorArgument",
+            "Obsolete",
             "System.CodeDom.Compiler.GeneratedCodeAttribute",
             "SuppressMessage",
             "DebuggerDisplay",
