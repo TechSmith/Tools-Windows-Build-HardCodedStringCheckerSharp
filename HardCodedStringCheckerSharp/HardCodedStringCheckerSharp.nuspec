@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <title>TechSmith Hard Coded String Checker Sharp</title>
+    <version>$version$</version>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <iconUrl>http://assets.techsmith.com/Images/content/mkt-about/tsc-dl-image.png</iconUrl>
+    <description>Finds hard coded string in C# files
+New features:
+    v 1.5.0.0 Added additional check for XML related attributes
+Breaking changes:
+
+Bugfixes:
+
+Misc:
+    </description>
+    <copyright>$copyright$</copyright>
+    <tags>CSharp Hard Coded Strings Checker Finder Fixer</tags>
+    <dependencies>
+    </dependencies> 
+  </metadata>
+</package>
