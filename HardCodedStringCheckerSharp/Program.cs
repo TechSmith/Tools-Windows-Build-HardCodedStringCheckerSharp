@@ -278,7 +278,10 @@ namespace HardCodedStringCheckerSharp
             "ContentProperty",
             "Given",
             "When",
-            "Then"
+            "Then",
+            "XmlAttribute",
+            "XmlRoot",
+            "XmlElement"
          };
 
          foreach ( string s in arrKeywords )
