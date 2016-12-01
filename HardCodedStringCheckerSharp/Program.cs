@@ -62,7 +62,7 @@ namespace HardCodedStringCheckerSharp
             return false;
          if ( strFilename.CompareTo( "CurrentVersion.cs" ) == 0 )
             return false;
-         if ( strFilename.CompareTo( "Resources.Designer.cs" ) == 0 )
+         if ( strFilename.Contains( ".Designer.cs" ) )
             return false;
          if ( strFilename.CompareTo( "SmokeTest.feature.cs" ) == 0 )//This is "automatically" generated
             return false;
