@@ -8,41 +8,39 @@ namespace HardCodedStringCheckerSharp
 {
    public class AppController
    {
-      private static string _strDirectory;// = @"E:\Git\CamtasiaWin";
-      private static bool _bCommenting = false;
-      private static int _WarningCount = 0;
+      private string _directory;
+      private bool _commenting;
+      private int _warningCount;
 
       public int Main( string[] args )
       {
-         int nArgsCount = args.Count();
-         if ( nArgsCount != 2 && nArgsCount != 3 )
+         int argsCount = args.Length;
+         if ( argsCount != 2 && argsCount != 3 )
          {
             Console.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional)" );
             Environment.ExitCode = 1;
             return 1;
          }
 
-         _strDirectory = args[0];
-         Action eAction = Action.ReportHCS;
+         _directory = args[0];
+         Action action = Action.ReportHCS;
          if ( args[1] == "Fix" )
-            eAction = Action.FixHCS;
+            action = Action.FixHCS;
 
-         bool bFailOnErrors = false;
-         if ( nArgsCount == 3 && args[2] == "--FailOnHCS" )
-            bFailOnErrors = true;
+         bool failOnErrors = argsCount == 3 && args[2] == "--FailOnHCS";
 
-         if ( !Directory.Exists( _strDirectory ) )
+         if ( !Directory.Exists( _directory ) )
          {
-            Console.WriteLine( String.Format( "Directory \"{0}\" doesn't exist.  Failed", _strDirectory ) );
+            Console.WriteLine( $"Directory \"{_directory}\" doesn't exist.  Failed" );
             Environment.ExitCode = 1;
             return 1;
          }
 
-         bool bChanges = false;
-         foreach ( var strFile in Directory.EnumerateFiles( _strDirectory, "*.cs", SearchOption.AllDirectories ) )
-            bChanges |= MakeFixesOnFile( strFile, eAction );
+         bool hasChanges = false;
+         foreach ( var file in Directory.EnumerateFiles( _directory, "*.cs", SearchOption.AllDirectories ) )
+            hasChanges |= MakeFixesOnFile( file, action );
 
-         if ( bFailOnErrors && bChanges )
+         if ( failOnErrors && hasChanges )
          {
             Environment.ExitCode = 1;
             return 1;
@@ -51,176 +49,176 @@ namespace HardCodedStringCheckerSharp
          return 0;
       }
 
-      private static bool MakeFixesOnFile( string strFile, Action eAction )
+      private bool MakeFixesOnFile( string file, Action eAction )
       {
-         string strFilename = Path.GetFileName( strFile );
-         if ( strFilename.CompareTo( "AssemblyInfo.cs" ) == 0 )
+         string fileName = Path.GetFileName( file );
+         if ( fileName.CompareTo( "AssemblyInfo.cs" ) == 0 )
             return false;
-         if ( strFilename.CompareTo( "CurrentVersion.cs" ) == 0 )
+         if ( fileName.CompareTo( "CurrentVersion.cs" ) == 0 )
             return false;
-         if ( strFilename.Contains( ".Designer.cs" ) )
+         if ( fileName.Contains( ".Designer.cs" ) )
             return false;
-         if ( strFilename.CompareTo( "SmokeTest.feature.cs" ) == 0 )//This is "automatically" generated
-            return false;
-
-         if ( strFile.ToLower().Contains( "packages" ) )
+         if ( fileName.CompareTo( "SmokeTest.feature.cs" ) == 0 )//This is "automatically" generated
             return false;
 
-         if ( strFile.ToLower().Contains( "TemporaryGeneratedFile" ) )
+         if ( file.ToLower().Contains( "packages" ) )
             return false;
 
-         if ( strFilename.ToLower().Contains( ".i." ) )
-            return false;
-         if ( strFilename.ToLower().Contains( ".g." ) )
+         if ( file.ToLower().Contains( "TemporaryGeneratedFile" ) )
             return false;
 
-         _bCommenting = false;
+         if ( fileName.ToLower().Contains( ".i." ) )
+            return false;
+         if ( fileName.ToLower().Contains( ".g." ) )
+            return false;
 
-         bool bMadeChanges = false;
-         int nLine = 0;
-         var encoding = GetEncoding( strFile );
+         _commenting = false;
 
-         string strLines = String.Empty;
-         foreach ( string strOriginalLine in File.ReadAllLines( strFile, encoding ) )
+         bool madeChanges = false;
+         int lineNumber = 0;
+         var encoding = GetEncoding( file );
+
+         string lines = string.Empty;
+         foreach ( string originalLine in File.ReadAllLines( file, encoding ) )
          {
-            nLine++;
+            lineNumber++;
 
-            string strLine = strOriginalLine;
-            bool bWarningLine = FixUpLine( ref strLine );
-            strLines += strLine + Environment.NewLine;
+            string line = originalLine;
+            bool isWarningLine = FixUpLine( ref line );
+            lines += line + Environment.NewLine;
 
-            if ( bWarningLine )
+            if ( isWarningLine )
             {
-               bMadeChanges = true;
-               _WarningCount++;
-               string strFirstDirectory = FirstDirectory( strFile, _strDirectory );
-               Console.WriteLine( String.Format( "{0}: [{1}|{2}:{3}] HCS \"{4}\"", _WarningCount, strFirstDirectory, strFilename, nLine, strOriginalLine.Trim() ) );
+               madeChanges = true;
+               _warningCount++;
+               string firstDirectory = FirstDirectory( file, _directory );
+               Console.WriteLine( $"{_warningCount}: [{firstDirectory}|{fileName}:{lineNumber}] HCS \"{originalLine.Trim()}\"" );
             }
          }
 
-         if ( eAction == Action.FixHCS && bMadeChanges == true )
+         if ( eAction == Action.FixHCS && madeChanges )
          {
-            strLines = String.Format( "using static NeverTranslateNS.NeverTranslateClass;{0}{1}", Environment.NewLine, strLines );
-            File.WriteAllText( strFile, strLines, encoding );
+            lines = $"using static NeverTranslateNS.NeverTranslateClass;{Environment.NewLine}{lines}";
+            File.WriteAllText( file, lines, encoding );
          }
 
-         return bMadeChanges;
+         return madeChanges;
       }
 
-      private static bool FixUpLine( ref string strLine )
+      private bool FixUpLine( ref string line )
       {
-         if ( HasIgnoreableKeyword( strLine ) )
+         if ( HasIgnoreableKeyword( line ) )
             return false;
 
          //Does the line have a NeverTranslate on it?
-         if ( strLine.IndexOf( "NeverTranslate" ) >= 0 )
+         if ( line.IndexOf( "NeverTranslate" ) >= 0 )
             return false;
 
-         StringType eType = StringType.None;
-         int nStringStart = -1;
-         bool bChanges = false;
-         bool bRestOfLineCommented = false;
-         for ( int i = 0; i < strLine.Length; i++ )
+         StringType stringType = StringType.None;
+         int stringStart = -1;
+         bool hasChanges = false;
+         bool isLineCommented = false;
+         for ( int i = 0; i < line.Length; i++ )
          {
-            char ch = strLine[i];
-            if ( ch == '*' && i > 0 && strLine[i - 1] == '/' )
+            char ch = line[i];
+            if ( ch == '*' && i > 0 && line[i - 1] == '/' )
             {
-               _bCommenting = true;
+               _commenting = true;
             }
-            if ( ch == '/' && i > 0 && strLine[i - 1] == '*' )
+            if ( ch == '/' && i > 0 && line[i - 1] == '*' )
             {
-               _bCommenting = false;
+               _commenting = false;
             }
-            if ( ch == '/' && i > 0 && strLine[i - 1] == '/' && eType == StringType.None )
+            if ( ch == '/' && i > 0 && line[i - 1] == '/' && stringType == StringType.None )
             {
-               bRestOfLineCommented = true;
+               isLineCommented = true;
             }
-            if ( ch == '{' && eType == StringType.StringInterpolation )
+            if ( ch == '{' && stringType == StringType.StringInterpolation )
             {
-               int nEndBrace = strLine.IndexOf( '}', i + 1 );
-               if ( nEndBrace != -1 )
+               int endBracePosition = line.IndexOf( '}', i + 1 );
+               if ( endBracePosition != -1 )
                {
-                  int nStart = i;
-                  int nLength = nEndBrace - i + 1;
-                  string sub = strLine.Substring( nStart, nLength );
-                  bool bFix = FixUpLine( ref sub );
-                  if ( bFix )
+                  int start = i;
+                  int length = endBracePosition - i + 1;
+                  string sub = line.Substring( start, length );
+                  bool shouldFix = FixUpLine( ref sub );
+                  if ( shouldFix )
                   {
-                     strLine = strLine.Remove( nStart, nLength );
-                     strLine = strLine.Insert( nStart, sub );
-                     i = nStart + sub.Length;
+                     line = line.Remove( start, length );
+                     line = line.Insert( start, sub );
+                     i = start + sub.Length;
                      continue;
                   }
                }
             }
 
-            if ( bRestOfLineCommented )
+            if ( isLineCommented )
                continue;
 
-            if ( ch == '"' && !_bCommenting )
+            if ( ch == '"' && !_commenting )
             {
-               if ( eType == StringType.None )
+               if ( stringType == StringType.None )
                {
-                  if ( i > 0 && strLine[i - 1] == '@' )
+                  if ( i > 0 && line[i - 1] == '@' )
                   {
-                     eType = StringType.VerbaitimString;
-                     nStringStart = i - 1;
+                     stringType = StringType.VerbatimString;
+                     stringStart = i - 1;
                   }
-                  else if ( i > 0 && strLine[i - 1] == '$' )
+                  else if ( i > 0 && line[i - 1] == '$' )
                   {
-                     eType = StringType.StringInterpolation;
-                     nStringStart = i - 1;
+                     stringType = StringType.StringInterpolation;
+                     stringStart = i - 1;
                   }
                   else
                   {
-                     eType = StringType.NormalString;
-                     nStringStart = i;
+                     stringType = StringType.NormalString;
+                     stringStart = i;
                   }
                }
                else
                {
-                  if ( eType == StringType.VerbaitimString && ( i + 1 ) < strLine.Length && strLine[i + 1] != '"' )
+                  if ( stringType == StringType.VerbatimString && ( i + 1 ) < line.Length && line[i + 1] != '"' )
                   {
-                     eType = StringType.None;
-                     if ( DoReplacement( ref strLine, ref i, nStringStart, eType ) == false )
+                     stringType = StringType.None;
+                     if ( DoReplacement( ref line, ref i, stringStart, stringType ) == false )
                         continue;
-                     bChanges = true;
+                     hasChanges = true;
                   }
-                  else if ( ( eType == StringType.NormalString || eType == StringType.StringInterpolation ) &&
-                     i > 0 && strLine[i - 1] != '\\' )
+                  else if ( ( stringType == StringType.NormalString || stringType == StringType.StringInterpolation ) &&
+                     i > 0 && line[i - 1] != '\\' )
                   {
-                     eType = StringType.None;
-                     if ( DoReplacement( ref strLine, ref i, nStringStart, eType ) == false )
+                     stringType = StringType.None;
+                     if ( DoReplacement( ref line, ref i, stringStart, stringType ) == false )
                         continue;
-                     bChanges = true;
+                     hasChanges = true;
                   }
                }
             }
          }
 
-         return bChanges;
+         return hasChanges;
       }
 
-      private static bool DoReplacement( ref string strLine, ref int i, int nStringStart, StringType eType )
+      private static bool DoReplacement( ref string line, ref int i, int stringStart, StringType stringType )
       {
-         int nLength = i - nStringStart + 1;
-         string strSegment = strLine.Substring( nStringStart, nLength );
-         if ( nLength == 2 || ( nLength == 3 && ( eType == StringType.StringInterpolation || eType == StringType.StringInterpolation ) ) )
+         int length = i - stringStart + 1;
+         string segment = line.Substring( stringStart, length );
+         if ( length == 2 || ( length == 3 && ( stringType == StringType.StringInterpolation || stringType == StringType.StringInterpolation ) ) )
             return false;
-         strLine = strLine.Remove( nStringStart, nLength );
-         string strInsert = String.Format( "NeverTranslate( {0} )", strSegment );
-         strLine = strLine.Insert( nStringStart, strInsert );
-         i = nStringStart + strInsert.Length;
+         line = line.Remove( stringStart, length );
+         string insertString = $"NeverTranslate( {segment} )";
+         line = line.Insert( stringStart, insertString );
+         i = stringStart + insertString.Length;
          return true;
       }
 
-      public static Encoding GetEncoding( string strFile )
+      public static Encoding GetEncoding( string filePath )
       {
          // Read the BOM
          var bom = new byte[4];
-         using ( var file = new FileStream( strFile, FileMode.Open, FileAccess.Read ) )
+         using ( var fileStream = new FileStream( filePath, FileMode.Open, FileAccess.Read ) )
          {
-            file.Read( bom, 0, 4 );
+            fileStream.Read( bom, 0, 4 );
          }
 
          // Analyze the BOM
@@ -237,25 +235,25 @@ namespace HardCodedStringCheckerSharp
          return Encoding.GetEncoding( "Windows-1252" );
       }
 
-      private static string FirstDirectory( string strFile, string strDirectory )
+      private static string FirstDirectory( string file, string directory )
       {
-         Debug.Assert( strFile.StartsWith( strDirectory ) );
+         Debug.Assert( file.StartsWith( directory ) );
 
-         string str = strFile.Remove( 0, strDirectory.Length ).TrimStart( '\\' );
-         int nSlash = str.IndexOf( '\\' );
-         Debug.Assert( nSlash > 0 );
-         string strFirstDirectory = String.Empty;
-         if ( nSlash > 0 )
-            strFirstDirectory = str.Substring( 0, nSlash );
+         string str = file.Remove( 0, directory.Length ).TrimStart( '\\' );
+         int slashPosition = str.IndexOf( '\\' );
+         Debug.Assert( slashPosition > 0 );
+         string firstDirectory = string.Empty;
+         if ( slashPosition > 0 )
+            firstDirectory = str.Substring( 0, slashPosition );
 
-         return strFirstDirectory;
+         return firstDirectory;
       }
 
-      private static bool HasIgnoreableKeyword( string strLine )
+      private static bool HasIgnoreableKeyword( string line )
       {
-         string[] arrKeywords = new string[]
+         string[] keywords =
          {
-            "const",
+            //"const",
             "Guid",
             "TemplatePart",
             "DllImport",
@@ -278,13 +276,7 @@ namespace HardCodedStringCheckerSharp
             "XmlElement"
          };
 
-         foreach ( string s in arrKeywords )
-         {
-            if ( strLine.Contains( s ) )
-               return true;
-         }
-         return false;
+         return keywords.Any( line.Contains );
       }
-
    }
 }

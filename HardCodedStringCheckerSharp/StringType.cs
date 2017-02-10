@@ -4,7 +4,7 @@
    {
       None,
       NormalString,
-      VerbaitimString,
+      VerbatimString,
       StringInterpolation
    }
 }
