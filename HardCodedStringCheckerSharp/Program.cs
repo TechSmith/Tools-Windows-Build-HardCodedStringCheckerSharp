@@ -6,11 +6,6 @@ using System.Text;
 
 namespace HardCodedStringCheckerSharp
 {
-   enum Action
-   {
-      ReportHCS,
-      FixHCS
-   }
    public class Program
    {
       private static string _strDirectory;// = @"E:\Git\CamtasiaWin";
