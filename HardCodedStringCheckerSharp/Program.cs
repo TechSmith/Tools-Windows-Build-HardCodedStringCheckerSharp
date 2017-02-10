@@ -1,8 +1,8 @@
 ﻿namespace HardCodedStringCheckerSharp
 {
-   public class Program
+   internal static class Program
    {
-      public static int Main( string[] args )
+      private static int Main( string[] args )
       {
          var appController = new AppController();
 
