@@ -8,16 +8,25 @@ namespace HardCodedStringCheckerSharp
 {
    public class AppController
    {
+      private readonly IFileSystem _fileSystem;
+      private readonly IConsole _consoleAdapter;
+
       private string _directory;
       private bool _commenting;
       private int _warningCount;
+
+      public AppController( IFileSystem fileSystem, IConsole consoleAdapter )
+      {
+         _fileSystem = fileSystem;
+         _consoleAdapter = consoleAdapter;
+      }
 
       public int Main( string[] args )
       {
          int argsCount = args.Length;
          if ( argsCount != 2 && argsCount != 3 )
          {
-            Console.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional)" );
+            _consoleAdapter.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional)" );
             Environment.ExitCode = 1;
             return 1;
          }
@@ -29,15 +38,15 @@ namespace HardCodedStringCheckerSharp
 
          bool failOnErrors = argsCount == 3 && args[2] == "--FailOnHCS";
 
-         if ( !Directory.Exists( _directory ) )
+         if ( !_fileSystem.DirectoryExists( _directory ) )
          {
-            Console.WriteLine( $"Directory \"{_directory}\" doesn't exist.  Failed" );
+            _consoleAdapter.WriteLine( $"Directory \"{_directory}\" doesn't exist.  Failed" );
             Environment.ExitCode = 1;
             return 1;
          }
 
          bool hasChanges = false;
-         foreach ( var file in Directory.EnumerateFiles( _directory, "*.cs", SearchOption.AllDirectories ) )
+         foreach ( var file in _fileSystem.EnumerateFiles( _directory, "*.cs", SearchOption.AllDirectories ) )
             hasChanges |= MakeFixesOnFile( file, action );
 
          if ( failOnErrors && hasChanges )
@@ -79,7 +88,7 @@ namespace HardCodedStringCheckerSharp
          var encoding = GetEncoding( file );
 
          string lines = string.Empty;
-         foreach ( string originalLine in File.ReadAllLines( file, encoding ) )
+         foreach ( string originalLine in _fileSystem.ReadAllLines( file, encoding ) )
          {
             lineNumber++;
 
@@ -92,14 +101,14 @@ namespace HardCodedStringCheckerSharp
                madeChanges = true;
                _warningCount++;
                string firstDirectory = FirstDirectory( file, _directory );
-               Console.WriteLine( $"{_warningCount}: [{firstDirectory}|{fileName}:{lineNumber}] HCS \"{originalLine.Trim()}\"" );
+               _consoleAdapter.WriteLine( $"{_warningCount}: [{firstDirectory}|{fileName}:{lineNumber}] HCS \"{originalLine.Trim()}\"" );
             }
          }
 
          if ( eAction == Action.FixHCS && madeChanges )
          {
             lines = $"using static NeverTranslateNS.NeverTranslateClass;{Environment.NewLine}{lines}";
-            File.WriteAllText( file, lines, encoding );
+            _fileSystem.WriteAllText( file, lines, encoding );
          }
 
          return madeChanges;
@@ -212,14 +221,9 @@ namespace HardCodedStringCheckerSharp
          return true;
       }
 
-      public static Encoding GetEncoding( string filePath )
+      public Encoding GetEncoding( string filePath )
       {
-         // Read the BOM
-         var bom = new byte[4];
-         using ( var fileStream = new FileStream( filePath, FileMode.Open, FileAccess.Read ) )
-         {
-            fileStream.Read( bom, 0, 4 );
-         }
+         var bom = _fileSystem.GetByteOrderMarker( filePath );
 
          // Analyze the BOM
          if ( bom[0] == 0x2b && bom[1] == 0x2f && bom[2] == 0x76 )
