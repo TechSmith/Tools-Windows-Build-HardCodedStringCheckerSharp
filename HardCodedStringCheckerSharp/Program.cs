@@ -106,13 +106,6 @@ namespace HardCodedStringCheckerSharp
          return bMadeChanges;
       }
 
-      enum StringType
-      {
-         None,
-         NormalString,
-         VerbaitimString,
-         StringInterpolation
-      }
       private static bool FixUpLine( ref string strLine )
       {
          if ( HasIgnoreableKeyword( strLine ) )
