@@ -27,7 +27,6 @@ namespace HardCodedStringCheckerSharp
          if ( argsCount != 2 && argsCount != 3 )
          {
             _consoleAdapter.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional)" );
-            Environment.ExitCode = 1;
             return 1;
          }
 
@@ -41,7 +40,6 @@ namespace HardCodedStringCheckerSharp
          if ( !_fileSystem.DirectoryExists( _directory ) )
          {
             _consoleAdapter.WriteLine( $"Directory \"{_directory}\" doesn't exist.  Failed" );
-            Environment.ExitCode = 1;
             return 1;
          }
 
@@ -51,7 +49,6 @@ namespace HardCodedStringCheckerSharp
 
          if ( failOnErrors && hasChanges )
          {
-            Environment.ExitCode = 1;
             return 1;
          }
 
