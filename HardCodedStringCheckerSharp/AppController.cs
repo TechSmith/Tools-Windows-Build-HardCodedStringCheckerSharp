@@ -254,7 +254,7 @@ namespace HardCodedStringCheckerSharp
       {
          string[] keywords =
          {
-            //"const",
+            "const",
             "Guid",
             "TemplatePart",
             "DllImport",
