@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle( "Hard Coded String Checker Sharp" )]
-[assembly: AssemblyDescription( "Searches for hard coded strings in CSharp files." )]
+[assembly: AssemblyTitle( "HardCodedStringCheckerSharp.UnitTests" )]
+[assembly: AssemblyDescription( "" )]
 [assembly: AssemblyConfiguration( "" )]
-[assembly: AssemblyCompany( "TechSmith Corporation" )]
-[assembly: AssemblyProduct( "HardCodedStringCheckerSharp" )]
+[assembly: AssemblyCompany( "" )]
+[assembly: AssemblyProduct( "HardCodedStringCheckerSharp.UnitTests" )]
 [assembly: AssemblyCopyright( "Copyright © 2016-2017 TechSmith Corporation. All rights reserved." )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible( false )]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid( "c92bd0e4-19f6-4f22-9c7f-26d9daaac663" )]
+[assembly: Guid( "11140ccb-7dd5-4b61-8932-6a37b554cd89" )]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion( "1.6.0.0" )]
-[assembly: AssemblyFileVersion( "1.6.0.0" )]
+[assembly: AssemblyVersion( "1.0.0.0" )]
+[assembly: AssemblyFileVersion( "1.0.0.0" )]
