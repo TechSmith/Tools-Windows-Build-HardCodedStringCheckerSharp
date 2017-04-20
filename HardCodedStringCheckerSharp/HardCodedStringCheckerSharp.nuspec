@@ -9,6 +9,7 @@
     <iconUrl>http://assets.techsmith.com/Images/content/mkt-about/tsc-dl-image.png</iconUrl>
     <description>Finds hard coded string in C# files
 New features:
+    v 1.7.0.0 Now automatically ignores files that end with "test" or "tests"
     v 1.6.1.0 Refactoring into classes and abstractions
     v 1.6.0.0 No longer checks .Designer.cs files
     v 1.5.0.0 Added additional check for XML related attributes
