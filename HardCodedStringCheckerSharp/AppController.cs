@@ -44,6 +44,7 @@ namespace HardCodedStringCheckerSharp
          }
 
          bool hasChanges = false;
+
          foreach ( var file in _fileSystem.EnumerateFiles( _directory, "*.cs", SearchOption.AllDirectories ) )
             hasChanges |= MakeFixesOnFile( file, action );
 
@@ -76,6 +77,11 @@ namespace HardCodedStringCheckerSharp
          if ( fileName.ToLower().Contains( ".i." ) )
             return false;
          if ( fileName.ToLower().Contains( ".g." ) )
+            return false;
+
+         string fileNameOnly = Path.GetFileNameWithoutExtension( fileName ).ToLower();
+
+         if ( fileNameOnly.EndsWith( "test" ) || fileNameOnly.EndsWith( "tests" ) )
             return false;
 
          _commenting = false;
