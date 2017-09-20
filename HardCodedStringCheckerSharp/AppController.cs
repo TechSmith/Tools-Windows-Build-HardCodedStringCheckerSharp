@@ -37,7 +37,7 @@ namespace HardCodedStringCheckerSharp
 
          bool failOnErrors = argsCount == 3 && 
 				(string.Equals(args[2], "--FailOnHCS") ||
-				 string.Equals(args[2], "True", StringComparison.OrdinalIgnoreCase) ||
+				 string.Equals(args[2], "True", StringComparison.OrdinalIgnoreCase)
 				);
 
          if ( !_fileSystem.DirectoryExists( _directory ) )
