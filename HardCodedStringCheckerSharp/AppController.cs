@@ -26,7 +26,7 @@ namespace HardCodedStringCheckerSharp
          int argsCount = args.Length;
          if ( argsCount != 2 && argsCount != 3 )
          {
-            _consoleAdapter.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional)" );
+            _consoleAdapter.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS or True optional)" );
             return 1;
          }
 
@@ -35,7 +35,10 @@ namespace HardCodedStringCheckerSharp
          if ( args[1] == "Fix" )
             action = Action.FixHCS;
 
-         bool failOnErrors = argsCount == 3 && args[2] == "--FailOnHCS";
+         bool failOnErrors = argsCount == 3 && 
+				(string.Equals(args[2], "--FailOnHCS") ||
+				 string.Equals(args[2], "True", StringComparison.OrdinalIgnoreCase)
+				);
 
          if ( !_fileSystem.DirectoryExists( _directory ) )
          {
