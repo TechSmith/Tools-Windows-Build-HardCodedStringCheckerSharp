@@ -65,7 +65,7 @@ namespace HardCodedStringCheckerSharp
             return false;
          if ( fileName.Contains( ".Designer.cs" ) )
             return false;
-         if ( fileName.CompareTo( "SmokeTest.feature.cs" ) == 0 )//This is "automatically" generated
+         if ( fileName.EndsWith( ".feature.cs" ) ) //This is "automatically" generated
             return false;
 
          if ( file.ToLower().Contains( "packages" ) )
