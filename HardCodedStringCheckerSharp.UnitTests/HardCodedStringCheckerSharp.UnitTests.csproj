@@ -69,7 +69,14 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="AppControllerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HardCodedStringCheckerSharp\HardCodedStringCheckerSharp.csproj">
+      <Project>{C92BD0E4-19F6-4F22-9C7F-26D9DAAAC663}</Project>
+      <Name>HardCodedStringCheckerSharp</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

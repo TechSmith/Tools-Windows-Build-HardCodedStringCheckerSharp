@@ -56,7 +56,7 @@ namespace HardCodedStringCheckerSharp
          return 0;
       }
 
-      private bool MakeFixesOnFile( string file, Action eAction )
+      internal static bool ShouldProcessFile( string file )
       {
          string fileName = Path.GetFileName( file );
          if ( fileName.CompareTo( "AssemblyInfo.cs" ) == 0 )
@@ -67,11 +67,13 @@ namespace HardCodedStringCheckerSharp
             return false;
          if ( fileName.EndsWith( ".feature.cs" ) ) //This is "automatically" generated
             return false;
+         if ( fileName.EndsWith( "Steps.cs" ) ) // Acceptance Test files, not user facing
+            return false;
 
          if ( file.ToLower().Contains( "packages" ) )
             return false;
 
-         if ( file.ToLower().Contains( "TemporaryGeneratedFile" ) )
+         if ( file.ToLower().Contains( "temporarygeneratedfile" ) )
             return false;
 
          if ( fileName.ToLower().Contains( ".i." ) )
@@ -80,9 +82,18 @@ namespace HardCodedStringCheckerSharp
             return false;
 
          string fileNameOnly = Path.GetFileNameWithoutExtension( fileName ).ToLower();
-
          if ( fileNameOnly.EndsWith( "test" ) || fileNameOnly.EndsWith( "tests" ) )
             return false;
+
+         return true;
+      }
+
+      internal bool MakeFixesOnFile( string file, Action eAction )
+      {
+         if ( !ShouldProcessFile( file ) )
+         {
+            return false;
+         }
 
          _commenting = false;
 
@@ -104,6 +115,7 @@ namespace HardCodedStringCheckerSharp
                madeChanges = true;
                _warningCount++;
                string firstDirectory = FirstDirectory( file, _directory );
+               string fileName = Path.GetFileName( file );
                _consoleAdapter.WriteLine( $"{_warningCount}: [{firstDirectory}|{fileName}:{lineNumber}] HCS \"{originalLine.Trim()}\"" );
             }
          }
@@ -228,17 +240,20 @@ namespace HardCodedStringCheckerSharp
       {
          var bom = _fileSystem.GetByteOrderMarker( filePath );
 
-         // Analyze the BOM
-         if ( bom[0] == 0x2b && bom[1] == 0x2f && bom[2] == 0x76 )
-            return Encoding.UTF7;
-         if ( bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf )
-            return Encoding.UTF8;
-         if ( bom[0] == 0xff && bom[1] == 0xfe )
-            return Encoding.Unicode; //UTF-16LE
-         if ( bom[0] == 0xfe && bom[1] == 0xff )
-            return Encoding.BigEndianUnicode; //UTF-16BE
-         if ( bom[0] == 0 && bom[1] == 0 && bom[2] == 0xfe && bom[3] == 0xff )
-            return Encoding.UTF32;
+         if ( bom.Length != 0 )
+         {
+            // Analyze the BOM
+            if ( bom[0] == 0x2b && bom[1] == 0x2f && bom[2] == 0x76 )
+               return Encoding.UTF7;
+            if ( bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf )
+               return Encoding.UTF8;
+            if ( bom[0] == 0xff && bom[1] == 0xfe )
+               return Encoding.Unicode; //UTF-16LE
+            if ( bom[0] == 0xfe && bom[1] == 0xff )
+               return Encoding.BigEndianUnicode; //UTF-16BE
+            if ( bom[0] == 0 && bom[1] == 0 && bom[2] == 0xfe && bom[3] == 0xff )
+               return Encoding.UTF32;
+         }
          return Encoding.GetEncoding( "Windows-1252" );
       }
 
