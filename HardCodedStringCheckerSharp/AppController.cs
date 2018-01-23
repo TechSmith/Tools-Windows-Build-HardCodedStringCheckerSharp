@@ -56,7 +56,7 @@ namespace HardCodedStringCheckerSharp
          return 0;
       }
 
-      private bool MakeFixesOnFile( string file, Action eAction )
+      internal static bool ShouldProcessFile( string file )
       {
          string fileName = Path.GetFileName( file );
          if ( fileName.CompareTo( "AssemblyInfo.cs" ) == 0 )
@@ -71,7 +71,7 @@ namespace HardCodedStringCheckerSharp
          if ( file.ToLower().Contains( "packages" ) )
             return false;
 
-         if ( file.ToLower().Contains( "TemporaryGeneratedFile" ) )
+         if ( file.ToLower().Contains( "temporarygeneratedfile" ) )
             return false;
 
          if ( fileName.ToLower().Contains( ".i." ) )
@@ -80,9 +80,18 @@ namespace HardCodedStringCheckerSharp
             return false;
 
          string fileNameOnly = Path.GetFileNameWithoutExtension( fileName ).ToLower();
-
          if ( fileNameOnly.EndsWith( "test" ) || fileNameOnly.EndsWith( "tests" ) )
             return false;
+
+         return true;
+      }
+
+      internal bool MakeFixesOnFile( string file, Action eAction )
+      {
+         if ( !ShouldProcessFile( file ) )
+         {
+            return false;
+         }
 
          _commenting = false;
 
@@ -104,6 +113,7 @@ namespace HardCodedStringCheckerSharp
                madeChanges = true;
                _warningCount++;
                string firstDirectory = FirstDirectory( file, _directory );
+               string fileName = Path.GetFileName( file );
                _consoleAdapter.WriteLine( $"{_warningCount}: [{firstDirectory}|{fileName}:{lineNumber}] HCS \"{originalLine.Trim()}\"" );
             }
          }
