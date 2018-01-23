@@ -67,6 +67,8 @@ namespace HardCodedStringCheckerSharp
             return false;
          if ( fileName.EndsWith( ".feature.cs" ) ) //This is "automatically" generated
             return false;
+         if ( fileName.EndsWith( "Steps.cs" ) ) // Acceptance Test files, not user facing
+            return false;
 
          if ( file.ToLower().Contains( "packages" ) )
             return false;

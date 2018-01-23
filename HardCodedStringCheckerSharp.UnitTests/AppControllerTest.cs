@@ -80,6 +80,13 @@ namespace HardCodedStringCheckerSharp.UnitTests
       }
 
       [TestMethod]
+      public void ShouldProcessFile_FileIsStepsFile_Ignores()
+      {
+         const string stepsFile = "Steps.cs";
+         AppController.ShouldProcessFile( stepsFile ).Should().BeFalse();
+      }
+
+      [TestMethod]
       public void ShouldProcessFile_FileIsTypicalSourceFile_Processes()
       {
          const string file = "SomeFile.cs";
