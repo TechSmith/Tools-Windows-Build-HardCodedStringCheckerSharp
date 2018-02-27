@@ -10,32 +10,29 @@ namespace HardCodedStringCheckerSharp
    {
       private readonly IFileSystem _fileSystem;
       private readonly IConsole _consoleAdapter;
+      private readonly ICommandLineParser _commandLineParser;
 
       private string _directory;
       private bool _commenting;
       private int _warningCount;
 
-      public AppController( IFileSystem fileSystem, IConsole consoleAdapter )
+      public AppController( IFileSystem fileSystem, IConsole consoleAdapter, ICommandLineParser commandLineParser )
       {
          _fileSystem = fileSystem;
          _consoleAdapter = consoleAdapter;
+         _commandLineParser = commandLineParser;
       }
 
       public int Main( string[] args )
       {
-         int argsCount = args.Length;
-         if ( argsCount != 2 && argsCount != 3 )
+         CommandLineOptions options = _commandLineParser.ParseCommandLine( args );
+         if ( options == null )
          {
-            _consoleAdapter.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional)" );
+            _consoleAdapter.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional) (--Exclude [PathToExcludeFile] optional)" );
             return 1;
          }
 
-         _directory = args[0];
-         Action action = Action.ReportHCS;
-         if ( args[1] == "Fix" )
-            action = Action.FixHCS;
-
-         bool failOnErrors = argsCount == 3 && args[2] == "--FailOnHCS";
+         _directory = options.RepoDirectory;
 
          if ( !_fileSystem.DirectoryExists( _directory ) )
          {
@@ -46,9 +43,9 @@ namespace HardCodedStringCheckerSharp
          bool hasChanges = false;
 
          foreach ( var file in _fileSystem.EnumerateFiles( _directory, "*.cs", SearchOption.AllDirectories ) )
-            hasChanges |= MakeFixesOnFile( file, action );
+            hasChanges |= MakeFixesOnFile( file, options.Action );
 
-         if ( failOnErrors && hasChanges )
+         if ( options.FailOnHCS && hasChanges )
          {
             return 1;
          }

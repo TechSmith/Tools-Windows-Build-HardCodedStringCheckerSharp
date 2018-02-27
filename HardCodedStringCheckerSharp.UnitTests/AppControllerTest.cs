@@ -96,7 +96,7 @@ namespace HardCodedStringCheckerSharp.UnitTests
       [TestMethod]
       public void GetEncoding_NoByteOrderMarkerReturn_DefaultsToWindows1252()
       {
-         var appController = new AppController( Mock.Of<IFileSystem>(), Mock.Of<IConsole>() );
+         var appController = new AppController( Mock.Of<IFileSystem>(), Mock.Of<IConsole>(), Mock.Of<ICommandLineParser>() );
 
          appController.GetEncoding( It.IsAny<string>() ).Should().Be( Encoding.GetEncoding( "Windows-1252" ) );
       }
