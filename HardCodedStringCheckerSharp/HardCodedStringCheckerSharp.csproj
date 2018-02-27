@@ -46,6 +46,7 @@
     <Compile Include="Action.cs" />
     <Compile Include="AppController.cs" />
     <Compile Include="CommandLineOptions.cs" />
+    <Compile Include="CommandLineParser.cs" />
     <Compile Include="ConsoleAdapter.cs" />
     <Compile Include="FileSystem.cs" />
     <Compile Include="ICommandLineParser.cs" />
