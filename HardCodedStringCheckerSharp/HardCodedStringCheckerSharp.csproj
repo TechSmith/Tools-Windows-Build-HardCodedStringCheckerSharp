@@ -48,6 +48,7 @@
     <Compile Include="CommandLineOptions.cs" />
     <Compile Include="ConsoleAdapter.cs" />
     <Compile Include="FileSystem.cs" />
+    <Compile Include="ICommandLineParser.cs" />
     <Compile Include="IConsole.cs" />
     <Compile Include="IFileSystem.cs" />
     <Compile Include="Program.cs" />
