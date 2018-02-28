@@ -29,12 +29,27 @@ namespace HardCodedStringCheckerSharp
          _excludeFileParser = excludeFileParser;
       }
 
+      private string GetUsageString()
+      {
+         return @"
+Usage: <Program> [RepoDirectory] [Action] [--FailOnHCS] [--Exclude [ExcludeFile]]
+
+   RepoDirectory              Required. The repo root directory. e.g. C:\src\CamtasiaWin\
+
+   Action                     Required. Must be either ""Fix"" or ""Report"".
+
+   --FailOnHCS                Optional. Return failure code if any Hard Coded String (HCS) is found.
+
+   --Exclude [ExcludeFile]    Optional. Load excluded files / folders from ExcludeFile.
+";
+      }
+
       public int Main( string[] args )
       {
          CommandLineOptions options = _commandLineParser.ParseCommandLine( args );
          if ( options == null )
          {
-            _consoleAdapter.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional) (--Exclude [PathToExcludeFile] optional)" );
+            _consoleAdapter.WriteLine( GetUsageString() );
             return 1;
          }
 
