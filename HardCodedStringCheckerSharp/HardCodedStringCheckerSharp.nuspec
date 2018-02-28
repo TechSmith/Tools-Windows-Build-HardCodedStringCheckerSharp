@@ -9,6 +9,7 @@
     <iconUrl>https://assets.techsmith.com/Images/content/mkt-about/tsc-dl-image.png</iconUrl>
     <description>Finds hard coded string in C# files
 New features:
+    v 4.0.0.0 Added --Exclude [ExcludeFile] as optional command line option
     v 3.0.0.0 Now ignores all "Steps.cs" files, used in SpecFlow/Gherkin Acceptance Tests
     v 2.0.0.0 Now ignores all ".feature.cs" files, used in SpecFlow/Gherkin Acceptance Tests
     v 1.7.0.0 Now automatically ignores files that end with "test" or "tests"
