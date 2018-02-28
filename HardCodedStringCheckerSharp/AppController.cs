@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -11,16 +12,21 @@ namespace HardCodedStringCheckerSharp
       private readonly IFileSystem _fileSystem;
       private readonly IConsole _consoleAdapter;
       private readonly ICommandLineParser _commandLineParser;
+      private readonly IExcludeFileParser _excludeFileParser;
 
       private string _directory;
       private bool _commenting;
       private int _warningCount;
 
-      public AppController( IFileSystem fileSystem, IConsole consoleAdapter, ICommandLineParser commandLineParser )
+      public AppController( IFileSystem fileSystem,
+                            IConsole consoleAdapter,
+                            ICommandLineParser commandLineParser,
+                            IExcludeFileParser excludeFileParser )
       {
          _fileSystem = fileSystem;
          _consoleAdapter = consoleAdapter;
          _commandLineParser = commandLineParser;
+         _excludeFileParser = excludeFileParser;
       }
 
       public int Main( string[] args )
@@ -40,10 +46,23 @@ namespace HardCodedStringCheckerSharp
             return 1;
          }
 
+         // If an exclude file is specified, load the exclusions from file
+         var exclusions = new List<string>();
+         if ( !string.IsNullOrEmpty( options.ExcludeFile ) )
+         {
+            if ( !_fileSystem.FileExists( options.ExcludeFile ) )
+            {
+               _consoleAdapter.WriteLine( $"Exclude file \"{options.ExcludeFile}\" doesn't exist.  Failed" );
+               return 1;
+            }
+            exclusions = _excludeFileParser.ParseExcludeFile( options.ExcludeFile );
+            exclusions = _excludeFileParser.PrependRepoRootDir( options.RepoDirectory, exclusions );
+         }
+
          bool hasChanges = false;
 
          foreach ( var file in _fileSystem.EnumerateFiles( _directory, "*.cs", SearchOption.AllDirectories ) )
-            hasChanges |= MakeFixesOnFile( file, options.Action );
+            hasChanges |= MakeFixesOnFile( file, options.Action, exclusions );
 
          if ( options.FailOnHCS && hasChanges )
          {
@@ -53,8 +72,11 @@ namespace HardCodedStringCheckerSharp
          return 0;
       }
 
-      internal static bool ShouldProcessFile( string file )
+      internal static bool ShouldProcessFile( string file, List<string> exclusions )
       {
+         if ( exclusions.Any( e => file.StartsWith( e, StringComparison.InvariantCultureIgnoreCase ) ) )
+            return false;
+
          string fileName = Path.GetFileName( file );
          if ( fileName.CompareTo( "AssemblyInfo.cs" ) == 0 )
             return false;
@@ -85,9 +107,9 @@ namespace HardCodedStringCheckerSharp
          return true;
       }
 
-      internal bool MakeFixesOnFile( string file, Action eAction )
+      internal bool MakeFixesOnFile( string file, Action eAction, List<string> exclusions )
       {
-         if ( !ShouldProcessFile( file ) )
+         if ( !ShouldProcessFile( file, exclusions ) )
          {
             return false;
          }
