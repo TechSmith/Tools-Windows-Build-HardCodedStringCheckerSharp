@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,32 +11,49 @@ namespace HardCodedStringCheckerSharp
    {
       private readonly IFileSystem _fileSystem;
       private readonly IConsole _consoleAdapter;
+      private readonly ICommandLineParser _commandLineParser;
+      private readonly IExcludeFileParser _excludeFileParser;
 
       private string _directory;
       private bool _commenting;
       private int _warningCount;
 
-      public AppController( IFileSystem fileSystem, IConsole consoleAdapter )
+      public AppController( IFileSystem fileSystem,
+                            IConsole consoleAdapter,
+                            ICommandLineParser commandLineParser,
+                            IExcludeFileParser excludeFileParser )
       {
          _fileSystem = fileSystem;
          _consoleAdapter = consoleAdapter;
+         _commandLineParser = commandLineParser;
+         _excludeFileParser = excludeFileParser;
+      }
+
+      private string GetUsageString()
+      {
+         return @"
+Usage: <Program> [RepoDirectory] [Action] [--FailOnHCS] [--Exclude [ExcludeFile]]
+
+   RepoDirectory              Required. The repo root directory. e.g. C:\src\CamtasiaWin\
+
+   Action                     Required. Must be either ""Fix"" or ""Report"".
+
+   --FailOnHCS                Optional. Return failure code if any Hard Coded String (HCS) is found.
+
+   --Exclude [ExcludeFile]    Optional. Load excluded files / folders from ExcludeFile.
+";
       }
 
       public int Main( string[] args )
       {
-         int argsCount = args.Length;
-         if ( argsCount != 2 && argsCount != 3 )
+         CommandLineOptions options = _commandLineParser.ParseCommandLine( args );
+         if ( options == null )
          {
-            _consoleAdapter.WriteLine( "Usage: <Program> RepoDirectory (Report or Fix) (--FailOnHCS optional)" );
+            _consoleAdapter.WriteLine( GetUsageString() );
             return 1;
          }
 
-         _directory = args[0];
-         Action action = Action.ReportHCS;
-         if ( args[1] == "Fix" )
-            action = Action.FixHCS;
-
-         bool failOnErrors = argsCount == 3 && args[2] == "--FailOnHCS";
+         _directory = options.RepoDirectory;
 
          if ( !_fileSystem.DirectoryExists( _directory ) )
          {
@@ -43,12 +61,25 @@ namespace HardCodedStringCheckerSharp
             return 1;
          }
 
+         // If an exclude file is specified, load the exclusions from file
+         var exclusions = new List<string>();
+         if ( !string.IsNullOrEmpty( options.ExcludeFile ) )
+         {
+            if ( !_fileSystem.FileExists( options.ExcludeFile ) )
+            {
+               _consoleAdapter.WriteLine( $"Exclude file \"{options.ExcludeFile}\" doesn't exist.  Failed" );
+               return 1;
+            }
+            exclusions = _excludeFileParser.ParseExcludeFile( options.ExcludeFile );
+            exclusions = _excludeFileParser.PrependRepoRootDir( options.RepoDirectory, exclusions );
+         }
+
          bool hasChanges = false;
 
          foreach ( var file in _fileSystem.EnumerateFiles( _directory, "*.cs", SearchOption.AllDirectories ) )
-            hasChanges |= MakeFixesOnFile( file, action );
+            hasChanges |= MakeFixesOnFile( file, options.Action, exclusions );
 
-         if ( failOnErrors && hasChanges )
+         if ( options.FailOnHCS && hasChanges )
          {
             return 1;
          }
@@ -56,8 +87,11 @@ namespace HardCodedStringCheckerSharp
          return 0;
       }
 
-      internal static bool ShouldProcessFile( string file )
+      internal static bool ShouldProcessFile( string file, List<string> exclusions )
       {
+         if ( exclusions.Any( e => file.StartsWith( e, StringComparison.InvariantCultureIgnoreCase ) ) )
+            return false;
+
          string fileName = Path.GetFileName( file );
          if ( fileName.CompareTo( "AssemblyInfo.cs" ) == 0 )
             return false;
@@ -88,9 +122,9 @@ namespace HardCodedStringCheckerSharp
          return true;
       }
 
-      internal bool MakeFixesOnFile( string file, Action eAction )
+      internal bool MakeFixesOnFile( string file, Action eAction, List<string> exclusions )
       {
-         if ( !ShouldProcessFile( file ) )
+         if ( !ShouldProcessFile( file, exclusions ) )
          {
             return false;
          }

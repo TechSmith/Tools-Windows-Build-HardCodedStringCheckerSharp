@@ -71,6 +71,8 @@
   <ItemGroup>
     <Compile Include="AppControllerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CommandLineParserTest.cs" />
+    <Compile Include="ExcludeFileParserTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HardCodedStringCheckerSharp\HardCodedStringCheckerSharp.csproj">

@@ -45,9 +45,14 @@
   <ItemGroup>
     <Compile Include="Action.cs" />
     <Compile Include="AppController.cs" />
+    <Compile Include="CommandLineOptions.cs" />
+    <Compile Include="CommandLineParser.cs" />
     <Compile Include="ConsoleAdapter.cs" />
+    <Compile Include="ExcludeFileParser.cs" />
     <Compile Include="FileSystem.cs" />
+    <Compile Include="ICommandLineParser.cs" />
     <Compile Include="IConsole.cs" />
+    <Compile Include="IExcludeFileParser.cs" />
     <Compile Include="IFileSystem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
