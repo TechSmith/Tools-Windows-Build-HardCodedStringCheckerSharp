@@ -14,7 +14,7 @@ namespace HardCodedStringCheckerSharp
       private readonly ICommandLineParser _commandLineParser;
       private readonly IExcludeFileParser _excludeFileParser;
 
-      private string _directory;
+      private string _directory = string.Empty;
       private bool _commenting;
       private int _warningCount;
 
@@ -309,7 +309,6 @@ Usage: <Program> [RepoDirectory] [Action] [--FailOnHCS] [--Exclude [ExcludeFile]
       {
          string[] keywords =
          {
-            "const",
             "Guid",
             "TemplatePart",
             "DllImport",
