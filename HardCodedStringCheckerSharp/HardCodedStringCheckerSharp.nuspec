@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>$id$</id>
+    <id>HardCodedStringCheckerSharp</id>
     <title>TechSmith Hard Coded String Checker Sharp</title>
-    <version>$version$</version>
-    <authors>$author$</authors>
-    <owners>$author$</owners>
+    <version>5.0.0.0</version>
+    <authors>TechSmith</authors>
+    <owners>TechSmith</owners>
     <iconUrl>https://assets.techsmith.com/Images/content/mkt-about/tsc-dl-image.png</iconUrl>
     <description>Finds hard coded string in C# files
 New features:
