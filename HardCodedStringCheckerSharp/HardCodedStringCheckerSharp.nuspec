@@ -23,7 +23,7 @@ Bugfixes:
 
 Misc:
     </description>
-    <copyright>$copyright$</copyright>
+    <copyright>Copyright © 2016-2018 TechSmith Corporation. All rights reserved</copyright>
     <tags>CSharp Hard Coded Strings Checker Finder Fixer</tags>
     <dependencies>
     </dependencies> 
