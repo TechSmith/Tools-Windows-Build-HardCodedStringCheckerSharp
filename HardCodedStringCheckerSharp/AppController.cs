@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -14,7 +14,7 @@ namespace HardCodedStringCheckerSharp
       private readonly ICommandLineParser _commandLineParser;
       private readonly IExcludeFileParser _excludeFileParser;
 
-      private string _directory;
+      private string _directory = string.Empty;
       private bool _commenting;
       private int _warningCount;
 
@@ -163,14 +163,51 @@ Usage: <Program> [RepoDirectory] [Action] [--FailOnHCS] [--Exclude [ExcludeFile]
          return madeChanges;
       }
 
+      private bool FixConstString( ref string line )
+      {
+         bool hasChanges = false;
+
+         List<string> lineItems = line.Split( ' ' ).ToList();
+         int indexOfConst = lineItems.IndexOf( "const" );
+         int indexOfString = lineItems.FindIndex( s => s.ToLower() == "string" );
+         int indexOfNeverTranslate = lineItems.IndexOf( "/*NeverTranslate*/" );
+         bool isConstString = indexOfConst != -1 && indexOfString != -1;
+         if( isConstString )
+         {
+            bool hasValidNeverTranslate = indexOfNeverTranslate == indexOfString + 1;
+            if( !hasValidNeverTranslate )
+            {
+               if( indexOfNeverTranslate != -1 )
+               {
+                  lineItems.RemoveAt( indexOfNeverTranslate );
+                  indexOfString = lineItems.FindIndex( s => s.ToLower() == "string" );
+               }
+               lineItems.Insert( indexOfString + 1, "/*NeverTranslate*/" );
+               line = string.Join( " ", lineItems );
+               hasChanges = true;
+            }
+         }
+
+         return hasChanges;
+      }
+
       private bool FixUpLine( ref string line )
       {
          if ( HasIgnoreableKeyword( line ) )
+         {
             return false;
+         }
+
+         if ( FixConstString( ref line ) )
+         {
+            return true;
+         }
 
          //Does the line have a NeverTranslate on it?
          if ( line.IndexOf( "NeverTranslate" ) >= 0 )
+         {
             return false;
+         }
 
          StringType stringType = StringType.None;
          int stringStart = -1;
@@ -309,7 +346,6 @@ Usage: <Program> [RepoDirectory] [Action] [--FailOnHCS] [--Exclude [ExcludeFile]
       {
          string[] keywords =
          {
-            "const",
             "Guid",
             "TemplatePart",
             "DllImport",

@@ -143,5 +143,115 @@ namespace HardCodedStringCheckerSharp.UnitTests
 
          appController.GetEncoding( It.IsAny<string>() ).Should().Be( Encoding.GetEncoding( "Windows-1252" ) );
       }
+
+      [TestMethod]
+      public void MakeFixesOnFile_FileContainsConstStringWithNeverTranslate_ReturnsFalse()
+      {
+         const string filePath = @"someDir\someFile";
+         string fileString = @"
+            public const string /*NeverTranslate*/ NotUserVisibleString = ""NotUserVisible"";
+         ";
+
+         Mock<IFileSystem> fileSystemMock = new Mock<IFileSystem>();
+         fileSystemMock.Setup( fsm => fsm.ReadAllLines( filePath, It.IsAny<Encoding>() ) ).Returns( new string[] { fileString } );
+
+         var appController = new AppController( fileSystemMock.Object, Mock.Of<IConsole>(), Mock.Of<ICommandLineParser>(), Mock.Of<IExcludeFileParser>() );
+
+         bool hasHardcodedStrings = appController.MakeFixesOnFile( filePath, Action.ReportHCS, new List<string>() );
+         hasHardcodedStrings.Should().BeFalse();
+      }
+
+      [TestMethod]
+      public void MakeFixesOnFile_FileContainsConstStringWithNeverTranslateInTrailingComment_ReturnsTrue()
+      {
+         const string filePath = @"someDir\someFile";
+         string fileString = @"
+            public const string NotUserVisibleString = ""NotUserVisible""; // NeverTranslate
+         ";
+
+         Mock<IFileSystem> fileSystemMock = new Mock<IFileSystem>();
+         fileSystemMock.Setup( fsm => fsm.ReadAllLines( filePath, It.IsAny<Encoding>() ) ).Returns( new string[] { fileString } );
+
+         var appController = new AppController( fileSystemMock.Object, Mock.Of<IConsole>(), Mock.Of<ICommandLineParser>(), Mock.Of<IExcludeFileParser>() );
+
+         bool hasHardcodedStrings = appController.MakeFixesOnFile( filePath, Action.ReportHCS, new List<string>() );
+         hasHardcodedStrings.Should().BeTrue();
+      }
+
+      [TestMethod]
+      public void MakeFixesOnFile_FileContainsConstStringWithNeverTranslateBeforeStringKeyword_ReturnsTrue()
+      {
+         const string filePath = @"someDir\someFile";
+         string fileString = @"
+            public const /*NeverTranslate*/ string NotUserVisibleString = ""NotUserVisible"";
+         ";
+
+         Mock<IFileSystem> fileSystemMock = new Mock<IFileSystem>();
+         fileSystemMock.Setup( fsm => fsm.ReadAllLines( filePath, It.IsAny<Encoding>() ) ).Returns( new string[] { fileString } );
+
+         var appController = new AppController( fileSystemMock.Object, Mock.Of<IConsole>(), Mock.Of<ICommandLineParser>(), Mock.Of<IExcludeFileParser>() );
+
+         bool hasHardcodedStrings = appController.MakeFixesOnFile( filePath, Action.ReportHCS, new List<string>() );
+         hasHardcodedStrings.Should().BeTrue();
+      }
+
+      [TestMethod]
+      public void MakeFixesOnFile_FileContainsConstStringWithoutNeverTranslate_ReturnsTrue()
+      {
+         const string filePath = @"someDir\someFile";
+         string fileString = @"
+            public const string userVisibleString = ""UserVisible"";
+         ";
+
+         Mock<IFileSystem> fileSystemMock = new Mock<IFileSystem>();
+         fileSystemMock.Setup( fsm => fsm.ReadAllLines( filePath, It.IsAny<Encoding>() ) ).Returns( new string[] { fileString } );
+
+         var appController = new AppController( fileSystemMock.Object, Mock.Of<IConsole>(), Mock.Of<ICommandLineParser>(), Mock.Of<IExcludeFileParser>() );
+
+         bool hasHardcodedStrings = appController.MakeFixesOnFile( filePath, Action.ReportHCS, new List<string>() );
+         hasHardcodedStrings.Should().BeTrue();
+      }
+
+      [TestMethod]
+      public void MakeFixesOnFile_FileContainsConstStringWithoutNeverTranslateWithFixHCS_FixesNeverTranslate()
+      {
+         const string filePath = @"someDir\someFile";
+         string fileString = @"
+            public const string userVisibleString = ""UserVisible"";
+         ";
+
+         string fixedString = @"
+            public const string /*NeverTranslate*/ userVisibleString = ""UserVisible"";
+         ";
+
+         Mock<IFileSystem> fileSystemMock = new Mock<IFileSystem>();
+         fileSystemMock.Setup( fsm => fsm.ReadAllLines( filePath, It.IsAny<Encoding>() ) ).Returns( new string[] { fileString } );
+
+         var appController = new AppController( fileSystemMock.Object, Mock.Of<IConsole>(), Mock.Of<ICommandLineParser>(), Mock.Of<IExcludeFileParser>() );
+
+         appController.MakeFixesOnFile( filePath, Action.FixHCS, new List<string>() );
+         fileSystemMock.Verify( fsm => fsm.WriteAllText( filePath, It.Is<string>( s => s.Contains( fixedString ) ), It.IsAny<Encoding>() ), Times.Once ); 
+      }
+
+      [TestMethod]
+      public void MakeFixesOnFile_FileContainsConstStringWithNeverTranslateBeforeStringKeyword_FixesNeverTranslate()
+      {
+         const string filePath = @"someDir\someFile";
+         string fileString = @"
+            public const /*NeverTranslate*/ string userVisibleString = ""UserVisible"";
+         ";
+
+         string fixedString = @"
+            public const string /*NeverTranslate*/ userVisibleString = ""UserVisible"";
+         ";
+
+         Mock<IFileSystem> fileSystemMock = new Mock<IFileSystem>();
+         fileSystemMock.Setup( fsm => fsm.ReadAllLines( filePath, It.IsAny<Encoding>() ) ).Returns( new string[] { fileString } );
+
+         var appController = new AppController( fileSystemMock.Object, Mock.Of<IConsole>(), Mock.Of<ICommandLineParser>(), Mock.Of<IExcludeFileParser>() );
+
+         appController.MakeFixesOnFile( filePath, Action.FixHCS, new List<string>() );
+         fileSystemMock.Verify( fsm => fsm.WriteAllText( filePath, It.Is<string>( s => s.Contains( fixedString ) ), It.IsAny<Encoding>() ), Times.Once );
+      }
    }
 }
