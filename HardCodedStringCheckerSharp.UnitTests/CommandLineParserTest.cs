@@ -162,5 +162,67 @@ namespace HardCodedStringCheckerSharp.UnitTests
 
          opts.ExcludeFile.Should().Be( excludeFile );
       }
+
+      [TestMethod]
+      public void ParseCommandLine_PassesNoSpecificFiles_HasNoSpecificFiles()
+      {
+         var parser = new CommandLineParser();
+
+         var options = parser.ParseCommandLine( new [] { "path", "Report" } );
+
+         options.SpecificFiles.Should().BeEmpty();
+      }
+
+      [TestMethod]
+      public void ParseCommandLine_PassFilesArgumentWithNoFiles_ReturnsNull()
+      {
+         var parser = new CommandLineParser();
+
+         var options = parser.ParseCommandLine( new[] { "path", "Report", "--Files" } );
+
+         options.Should().BeNull();
+      }
+
+      [TestMethod]
+      public void ParseCommandLine_PassesCSharpToInspect_RecordsThatFile()
+      {
+         var parser = new CommandLineParser();
+
+         var options = parser.ParseCommandLine( new[] { "path", "Report", "--Files", "one.cs" } );
+
+         options.SpecificFiles.Should().HaveCount( 1 ).And.Contain( "one.cs" );
+      }
+
+      [TestMethod]
+      public void ParseCommandLine_PassesOneFileCSharpFileWithDanglingComma_RecordsThatFile()
+      {
+         var parser = new CommandLineParser();
+
+         var options = parser.ParseCommandLine( new[] { "path", "Report", "--Files", "one.cs," } );
+
+         options.SpecificFiles.Should().HaveCount( 1 ).And.Contain( "one.cs" );
+      }
+
+      [TestMethod]
+      public void ParseCommandLine_PassesTwoCSharpFilesToInspect_RecordsBothFiles()
+      {
+         var parser = new CommandLineParser();
+
+         var options = parser.ParseCommandLine( new[] { "path", "Report", "--Files", "one.cs,two.cs" } );
+
+         options.SpecificFiles.Should().HaveCount( 2 )
+            .And.Contain( "one.cs" )
+            .And.Contain( "two.cs" );
+      }
+
+      [TestMethod]
+      public void ParseCommandLine_PassesOneTextFile_DoesNotRecordNonCSharpFiles()
+      {
+         var parser = new CommandLineParser();
+
+         var options = parser.ParseCommandLine( new[] { "path", "Report", "--Files", "one.txt" } );
+
+         options.SpecificFiles.Should().BeEmpty();
+      }
    }
 }

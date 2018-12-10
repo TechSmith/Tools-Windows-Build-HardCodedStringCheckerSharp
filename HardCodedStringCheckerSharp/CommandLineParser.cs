@@ -1,4 +1,8 @@
-﻿namespace HardCodedStringCheckerSharp
+﻿using System;
+using System.IO;
+using System.Linq;
+
+namespace HardCodedStringCheckerSharp
 {
    class CommandLineParser : ICommandLineParser
    {
@@ -48,6 +52,17 @@
                      return null;  // not enough arguments
                   }
                   opts.ExcludeFile = args[i];
+               }
+               else if ( args[i] == "--Files" )
+               {
+                  i++;
+                  if ( i >= args.Length )
+                  {
+                     return null;
+                  }
+                  
+                  var files = args[i].Split( new[] { "," }, StringSplitOptions.RemoveEmptyEntries );
+                  opts.SpecificFiles = files.Where( f => Path.GetExtension( f ).ToLower() == ".cs" );
                }
                else
                {
