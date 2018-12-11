@@ -76,7 +76,7 @@ Usage: <Program> [RepoDirectory] [Action] [--FailOnHCS] [--Exclude [ExcludeFile]
 
          bool hasChanges = false;
 
-         foreach ( var file in _fileSystem.EnumerateFiles( _directory, "*.cs", SearchOption.AllDirectories ) )
+         foreach ( var file in GetFilesForProcessing( options ) )
             hasChanges |= MakeFixesOnFile( file, options.Action, exclusions );
 
          if ( options.FailOnHCS && hasChanges )
@@ -85,6 +85,16 @@ Usage: <Program> [RepoDirectory] [Action] [--FailOnHCS] [--Exclude [ExcludeFile]
          }
 
          return 0;
+      }
+
+      private IEnumerable<string> GetFilesForProcessing( CommandLineOptions options )
+      {
+         if ( options.SpecificFiles.Any() )
+         {
+            return options.SpecificFiles;
+         }
+
+         return _fileSystem.EnumerateFiles( _directory, "*.cs", SearchOption.AllDirectories );
       }
 
       internal static bool ShouldProcessFile( string file, List<string> exclusions )
