@@ -77,7 +77,15 @@ Usage: <Program> [RepoDirectory] [Action] [--FailOnHCS] [--Exclude [ExcludeFile]
          bool hasChanges = false;
 
          foreach ( var file in GetFilesForProcessing( options ) )
+         {
+            if ( !_fileSystem.FileExists( file ) )
+            {
+               _consoleAdapter.WriteLine( $"File not found, skipping {file}" );
+               continue;
+            }
+
             hasChanges |= MakeFixesOnFile( file, options.Action, exclusions );
+         }
 
          if ( options.FailOnHCS && hasChanges )
          {
