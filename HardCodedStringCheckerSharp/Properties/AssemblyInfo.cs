@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "TechSmith Corporation" )]
 [assembly: AssemblyProduct( "HardCodedStringCheckerSharp" )]
-[assembly: AssemblyCopyright( "Copyright © 2016-2018 TechSmith Corporation. All rights reserved." )]
+[assembly: AssemblyCopyright( "Copyright © 2016-2019 TechSmith Corporation. All rights reserved." )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 [assembly: InternalsVisibleTo( "HardCodedStringCheckerSharp.UnitTests" )]
