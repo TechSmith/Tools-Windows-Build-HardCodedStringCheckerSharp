@@ -3,12 +3,13 @@
   <metadata>
     <id>HardCodedStringCheckerSharp</id>
     <title>TechSmith Hard Coded String Checker Sharp</title>
-    <version>5.0.0.0</version>
+    <version>5.1.0.0</version>
     <authors>TechSmith</authors>
     <owners>TechSmith</owners>
     <iconUrl>https://assets.techsmith.com/Images/content/mkt-about/tsc-dl-image.png</iconUrl>
     <description>Finds hard coded string in C# files
 New features:
+    v 5.1.0.0 Added --Files [file1.cs,file2.cs,etc.] to check specific files
     v 5.0.0.0 Enforce NeverTranslate on const strings
     v 4.0.0.0 Added --Exclude [ExcludeFile] as optional command line option
     v 3.0.0.0 Now ignores all "Steps.cs" files, used in SpecFlow/Gherkin Acceptance Tests
@@ -23,7 +24,7 @@ Bugfixes:
 
 Misc:
     </description>
-    <copyright>Copyright © 2016-2018 TechSmith Corporation. All rights reserved</copyright>
+    <copyright>Copyright © 2016-2019 TechSmith Corporation. All rights reserved</copyright>
     <tags>CSharp Hard Coded Strings Checker Finder Fixer</tags>
     <dependencies>
     </dependencies> 
